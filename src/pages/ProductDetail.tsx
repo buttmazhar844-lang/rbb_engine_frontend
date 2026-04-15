@@ -6,7 +6,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { PageContainer } from '../components/layout/PageContainer';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { Section } from '../components/ui/Section';
-import { api, Product } from '../api/client';
+import { api, apiClient, Product } from '../api/client';
 
 type TabType = 'raw' | 'final' | 'metadata' | 'files';
 
@@ -22,21 +22,13 @@ export const ProductDetail: React.FC = () => {
   const downloadPptx = async () => {
     if (!product) return;
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-      const response = await fetch(`${apiUrl}/products/${product.id}/download/pptx`);
-      if (!response.ok) {
-        const ct = response.headers.get('content-type');
-        const msg = ct?.includes('application/json')
-          ? (await response.json()).detail
-          : `Backend returned ${response.status}`;
-        alert(`PPTX download failed: ${msg}`);
-        return;
-      }
-      const cd = response.headers.get('content-disposition');
+      const response = await apiClient.get(`/products/${product.id}/download/pptx`, {
+        responseType: 'blob',
+      });
+      const cd = response.headers['content-disposition'];
       const filename = cd?.split('filename=')[1]?.replace(/"/g, '')
-        || `${product.template_type?.toLowerCase().replace(/_/g, '_')}_grade_${product.grade_level}_${product.id}.pptx`;
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+        || `${product.template_type?.toLowerCase()}_grade_${product.grade_level}_${product.id}.pptx`;
+      const url = URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
@@ -45,7 +37,7 @@ export const ProductDetail: React.FC = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`PPTX download failed: ${err.message}`);
+      alert(`PPTX download failed: ${err.response?.data?.detail || err.message}`);
     }
   };
 
