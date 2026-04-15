@@ -12,7 +12,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Table, TableHead, TableBody, TableRow, TableHeader, TableCell } from '../components/ui/Table';
 import { useProducts } from '../hooks/useProducts';
 import { productsApi } from '../api/products';
-import { Product, TemplateType, WorldviewFlag, GradeLevel } from '../types/api';
+import { Product, TemplateType, WorldviewFlag } from '../types/api';
 
 const statusOptions = [
   { value: 'GENERATED', label: 'Generated' },

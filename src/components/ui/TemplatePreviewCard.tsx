@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from './Card';
 import { Button } from './Button';
 import { Spinner } from './Spinner';
@@ -20,11 +20,7 @@ export const TemplatePreviewCard: React.FC<TemplatePreviewCardProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadPreview();
-  }, [templateType]);
-
-  const loadPreview = async () => {
+  const loadPreview = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -37,7 +33,11 @@ export const TemplatePreviewCard: React.FC<TemplatePreviewCardProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [templateType, onPreviewLoad]);
+
+  useEffect(() => {
+    loadPreview();
+  }, [loadPreview]);
 
   const getTemplateLabel = (type: TemplateType) => {
     const labels: Record<TemplateType, string> = {

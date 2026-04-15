@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
@@ -8,7 +8,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { TemplatePreviewCard } from '../components/ui/TemplatePreviewCard';
 import { generationApi } from '../api/generation';
 import { useStandards } from '../hooks/useStandards';
-import { TemplateType, ELAStandardType, GradeLevel, WorldviewFlag, GenerateTemplateRequest } from '../types/api';
+import { TemplateType, ELAStandardType, WorldviewFlag, GenerateTemplateRequest } from '../types/api';
 
 interface FormData {
   grade_level: GradeLevel;
