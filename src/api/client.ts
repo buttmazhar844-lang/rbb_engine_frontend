@@ -125,13 +125,13 @@ export const api = {
     limit?: number;
     offset?: number;
   }) => {
-    const response = await apiClient.get('/generation-jobs', { params });
+    const response = await apiClient.get('/v1/generation-jobs', { params });
     return response.data;
   },
 
   // Get specific job
   getGenerationJob: async (id: number) => {
-    const response = await apiClient.get(`/generation-jobs/${id}`);
+    const response = await apiClient.get(`/v1/generation-jobs/${id}`);
     return response.data;
   },
 

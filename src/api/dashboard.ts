@@ -13,7 +13,7 @@ export const dashboardApi = {
     const response = await apiClient.get('/products', { 
       params: { limit, offset: 0 } 
     });
-    return response.data.data;
+    return response.data.data.products;
   },
 
   // Get recent generation jobs
@@ -21,6 +21,6 @@ export const dashboardApi = {
     const response = await apiClient.get('/v1/generation-jobs', { 
       params: { limit, offset: 0 } 
     });
-    return response.data.data;
+    return response.data.data.jobs;
   },
 };
