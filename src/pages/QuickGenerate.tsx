@@ -8,7 +8,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { TemplatePreviewCard } from '../components/ui/TemplatePreviewCard';
 import { generationApi } from '../api/generation';
 import { useStandards } from '../hooks/useStandards';
-import { TemplateType, ELAStandardType, WorldviewFlag, GenerateTemplateRequest } from '../types/api';
+import { TemplateType, ELAStandardType, GradeLevel, WorldviewFlag, GenerateTemplateRequest } from '../types/api';
 
 interface FormData {
   grade_level: GradeLevel;
