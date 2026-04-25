@@ -225,8 +225,12 @@ export const ProductDetail: React.FC = () => {
                     {product.status === 'GENERATED' ? (
                       productContent ? (
                         <div className="prose max-w-none">
-                          {/* Title */}
-                          {productContent.title && <h4 className="text-xl font-bold text-neutral-900 mb-4">{productContent.title}</h4>}
+                          {/* Title - use template_type label, not raw AI title */}
+                          {product.template_type && (
+                            <h4 className="text-xl font-bold text-neutral-900 mb-4">
+                              {product.template_type.replace(/_/g, ' ')} — Grade {product.grade_level}
+                            </h4>
+                          )}
                           
                           {/* Reading Passage Content */}
                           {productContent.passage_text && (
@@ -304,13 +308,25 @@ export const ProductDetail: React.FC = () => {
                               <div className="mt-2 space-y-3">
                                 {productContent.questions.map((q: any, idx: number) => (
                                   <div key={idx} className="border-l-4 border-blue-200 pl-4 py-2">
-                                    <p className="text-neutral-900"><strong>Q{idx + 1}:</strong> {q.question || q.text || q}</p>
-                                    {q.options && (
+                                    <p className="text-neutral-900"><strong>Q{q.number ?? idx + 1}:</strong> {q.question || q.text || q}</p>
+                                    {q.options && typeof q.options === 'object' && !Array.isArray(q.options) && (
+                                      <ul className="list-none ml-2 mt-1 space-y-1">
+                                        {Object.entries(q.options).map(([key, val]) => (
+                                          <li key={key} className="text-neutral-700">
+                                            <strong>{key}.</strong> {val as string}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                    {q.options && Array.isArray(q.options) && (
                                       <ul className="list-disc ml-5 mt-1">
                                         {q.options.map((opt: string, optIdx: number) => (
                                           <li key={optIdx} className="text-neutral-700">{opt}</li>
                                         ))}
                                       </ul>
+                                    )}
+                                    {q.answer && (
+                                      <p className="text-sm text-green-700 mt-1"><strong>Answer:</strong> {q.answer}</p>
                                     )}
                                   </div>
                                 ))}
