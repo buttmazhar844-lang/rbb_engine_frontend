@@ -2,6 +2,7 @@ import axios from 'axios';
 
 // API base URL from environment variables
 const BASE_URL = 'https://rbbenginebackend-production.up.railway.app/api';
+// const BASE_URL = 'http://localhost:8000/api';
 
 // Create Axios instance with default configuration
 export const apiClient = axios.create({
@@ -15,7 +16,11 @@ export const apiClient = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    console.log('API Request:', config.method?.toUpperCase(), `${config.baseURL}${config.url}`);
+    console.log(
+      'API Request:',
+      config.method?.toUpperCase(),
+      `${config.baseURL}${config.url}`
+    );
     return config;
   },
   (error) => Promise.reject(error)
@@ -24,7 +29,12 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('API Response:', response.config.url, 'Status:', response.status);
+    console.log(
+      'API Response:',
+      response.config.url,
+      'Status:',
+      response.status
+    );
     return response;
   },
   (error) => {
@@ -89,7 +99,9 @@ export interface GenerationJob {
 // API Functions
 export const api = {
   // Generate product
-  generateProduct: async (data: GenerateProductRequest): Promise<GenerateProductResponse> => {
+  generateProduct: async (
+    data: GenerateProductRequest
+  ): Promise<GenerateProductResponse> => {
     const response = await apiClient.post('/generate-product', data);
     return response.data;
   },
@@ -139,5 +151,5 @@ export const api = {
   healthCheck: async () => {
     const response = await apiClient.get('/health');
     return response.data;
-  }
+  },
 };
