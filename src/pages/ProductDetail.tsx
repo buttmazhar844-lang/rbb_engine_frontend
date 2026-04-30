@@ -5,10 +5,29 @@ import { Button } from '../components/ui/Button';
 import { PageHeader } from '../components/ui/PageHeader';
 import { PageContainer } from '../components/layout/PageContainer';
 import { StatusBadge } from '../components/ui/StatusBadge';
-import { Section } from '../components/ui/Section';
 import { api, apiClient, Product } from '../api/client';
 
 type TabType = 'raw' | 'final' | 'metadata' | 'files';
+
+const TEMPLATE_LABELS: Record<string, string> = {
+  BUNDLE_OVERVIEW:                 'Bundle Overview',
+  VOCABULARY_PACK:                 'Vocabulary Pack',
+  ANCHOR_READING_PASSAGE:          'Anchor Reading Passage',
+  READING_COMPREHENSION_QUESTIONS: 'Reading Comprehension Questions',
+  SHORT_QUIZ:                      'Short Quiz',
+  EXIT_TICKETS:                    'Exit Tickets',
+  WRITING_PROMPTS:                 'Writing Prompts',
+};
+
+const TEMPLATE_ICONS: Record<string, string> = {
+  BUNDLE_OVERVIEW:                 '📦',
+  VOCABULARY_PACK:                 '📖',
+  ANCHOR_READING_PASSAGE:          '📄',
+  READING_COMPREHENSION_QUESTIONS: '❓',
+  SHORT_QUIZ:                      '✏️',
+  EXIT_TICKETS:                    '🎫',
+  WRITING_PROMPTS:                 '✍️',
+};
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -91,6 +110,13 @@ export const ProductDetail: React.FC = () => {
     );
   }
 
+  const getProductTitle = (product: Product) => {
+    const label = TEMPLATE_LABELS[product.template_type] || product.template_type.replace(/_/g, ' ');
+    const standard = product.ela_standard_code || '';
+    const grade = product.grade_level ? `Grade ${product.grade_level}` : '';
+    return standard ? `${label} — ${standard} ${grade}` : `${label} ${grade}`;
+  };
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'GENERATED': return 'Generated';
@@ -119,8 +145,8 @@ export const ProductDetail: React.FC = () => {
   return (
     <PageContainer>
       <PageHeader
-        title={`${product.template_type} - Grade ${product.grade_level}`}
-        description={`Product ID: ${product.id} | ${product.curriculum_board} curriculum`}
+        title={getProductTitle(product)}
+        description={`${product.curriculum_board} · ${product.worldview_flag === 'CHRISTIAN' ? '✝️ Christian Content' : '📚 Neutral Content'} · ID #${product.id}`}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate('/products')}>Back</Button>
@@ -136,36 +162,39 @@ export const ProductDetail: React.FC = () => {
         <div className="lg:col-span-3">
           {/* Product Summary */}
           <Card className="mb-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-semibold text-neutral-900 mb-2">
-                  {product.template_type?.replace(/_/g, ' ') || 'Product'} - Grade {product.grade_level}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">{TEMPLATE_ICONS[product.template_type] || '📝'}</span>
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold text-neutral-900 truncate">
+                  {getProductTitle(product)}
                 </h2>
-                <p className="text-neutral-600">
-                  Generated content for {product.curriculum_board} curriculum
+                <p className="text-sm text-neutral-500 mt-0.5">
+                  {product.curriculum_board}
                 </p>
               </div>
-              <StatusBadge status={getStatusVariant(product.status)}>
-                {getStatusLabel(product.status)}
-              </StatusBadge>
+              <div className="ml-auto shrink-0">
+                <StatusBadge status={getStatusVariant(product.status) as any}>
+                  {getStatusLabel(product.status)}
+                </StatusBadge>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-neutral-200">
-              <div>
-                <p className="text-sm font-medium text-neutral-500">Product ID</p>
-                <p className="text-sm text-neutral-900">#{product.id}</p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-neutral-100">
+              <div className="bg-neutral-50 rounded-lg px-3 py-2">
+                <p className="text-xs font-medium text-neutral-400 mb-0.5">Product ID</p>
+                <p className="text-sm font-semibold text-neutral-800">#{product.id}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-neutral-500">Type</p>
-                <p className="text-sm text-neutral-900">{product.template_type}</p>
+              <div className="bg-neutral-50 rounded-lg px-3 py-2">
+                <p className="text-xs font-medium text-neutral-400 mb-0.5">Standard</p>
+                <p className="text-sm font-semibold text-neutral-800 font-mono">{product.ela_standard_code || '—'}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-neutral-500">Standard ID</p>
-                <p className="text-sm text-neutral-900">#{product.standard_id}</p>
+              <div className="bg-neutral-50 rounded-lg px-3 py-2">
+                <p className="text-xs font-medium text-neutral-400 mb-0.5">Grade</p>
+                <p className="text-sm font-semibold text-neutral-800">Grade {product.grade_level}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-neutral-500">Created</p>
-                <p className="text-sm text-neutral-900">{new Date(product.created_at).toLocaleDateString()}</p>
+              <div className="bg-neutral-50 rounded-lg px-3 py-2">
+                <p className="text-xs font-medium text-neutral-400 mb-0.5">Created</p>
+                <p className="text-sm font-semibold text-neutral-800">{new Date(product.created_at).toLocaleDateString()}</p>
               </div>
             </div>
           </Card>
@@ -547,16 +576,41 @@ export const ProductDetail: React.FC = () => {
         </div>
 
         {/* Sidebar */}
-        <div>
-          <Section title="Quick Actions">
-            <Card>
-              <div className="space-y-3">
-                <Button variant="primary" fullWidth>Regenerate</Button>
-                <Button variant="outline" fullWidth>Duplicate</Button>
-                <Button variant="outline" fullWidth>Export All</Button>
+        <div className="space-y-4">
+          <div className="bg-white border border-neutral-200 rounded-xl p-4">
+            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">Details</p>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Worldview</span>
+                <span className={`font-medium ${
+                  product.worldview_flag === 'CHRISTIAN' ? 'text-blue-600' : 'text-neutral-700'
+                }`}>
+                  {product.worldview_flag === 'CHRISTIAN' ? '✝️ Christian' : '📚 Neutral'}
+                </span>
               </div>
-            </Card>
-          </Section>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Standard Type</span>
+                <span className="font-medium text-neutral-700">{product.ela_standard_type}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Locale</span>
+                <span className="font-medium text-neutral-700">{product.locale || 'US'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Job ID</span>
+                <span className="font-medium text-neutral-700">#{product.generation_job_id || '—'}</span>
+              </div>
+            </div>
+          </div>
+
+          {product.status === 'GENERATED' && (
+            <div className="bg-white border border-neutral-200 rounded-xl p-4">
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-3">Download</p>
+              <Button variant="primary" fullWidth onClick={downloadPptx}>
+                ⬇️ Download PPTX
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </PageContainer>

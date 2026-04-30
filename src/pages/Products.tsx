@@ -21,14 +21,24 @@ const statusOptions = [
 ];
 
 const templateOptions = [
-  { value: 'BUNDLE_OVERVIEW', label: 'Bundle Overview' },
-  { value: 'VOCABULARY_PACK', label: 'Vocabulary Pack' },
-  { value: 'ANCHOR_READING_PASSAGE', label: 'Reading Passage' },
+  { value: 'BUNDLE_OVERVIEW',                 label: 'Bundle Overview' },
+  { value: 'VOCABULARY_PACK',                 label: 'Vocabulary Pack' },
+  { value: 'ANCHOR_READING_PASSAGE',          label: 'Reading Passage' },
   { value: 'READING_COMPREHENSION_QUESTIONS', label: 'Comprehension' },
-  { value: 'SHORT_QUIZ', label: 'Short Quiz' },
-  { value: 'EXIT_TICKETS', label: 'Exit Tickets' },
-  { value: 'WRITING_PROMPTS', label: 'Writing Prompts' },
+  { value: 'SHORT_QUIZ',                      label: 'Short Quiz' },
+  { value: 'EXIT_TICKETS',                    label: 'Exit Tickets' },
+  { value: 'WRITING_PROMPTS',                 label: 'Writing Prompts' },
 ];
+
+const TEMPLATE_ICONS: Record<string, string> = {
+  BUNDLE_OVERVIEW:                 '📦',
+  VOCABULARY_PACK:                 '📖',
+  ANCHOR_READING_PASSAGE:          '📄',
+  READING_COMPREHENSION_QUESTIONS: '❓',
+  SHORT_QUIZ:                      '✏️',
+  EXIT_TICKETS:                    '🎫',
+  WRITING_PROMPTS:                 '✍️',
+};
 
 const worldviewOptions = [
   { value: 'CHRISTIAN', label: 'Christian' },
@@ -80,7 +90,14 @@ export const Products: React.FC = () => {
   };
 
   const getTemplateLabel = (templateType: TemplateType) => {
-    return templateOptions.find(t => t.value === templateType)?.label || templateType;
+    return templateOptions.find(t => t.value === templateType)?.label || templateType.replace(/_/g, ' ');
+  };
+
+  const getTemplateName = (product: Product) => {
+    const label = getTemplateLabel(product.template_type);
+    const standard = product.ela_standard_code || '';
+    const grade = product.grade_level ? `Grade ${product.grade_level}` : '';
+    return standard ? `${label} — ${standard} ${grade}` : `${label} ${grade}`;
   };
 
   if (isLoading) {
@@ -135,11 +152,9 @@ export const Products: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableHeader>Template ID</TableHeader>
-              <TableHeader>Type</TableHeader>
+              <TableHeader>Template</TableHeader>
               <TableHeader>Status</TableHeader>
               <TableHeader>Grade</TableHeader>
-              <TableHeader>Standard</TableHeader>
               <TableHeader>Worldview</TableHeader>
               <TableHeader>Created</TableHeader>
               <TableHeader>Actions</TableHeader>
@@ -148,43 +163,48 @@ export const Products: React.FC = () => {
           <TableBody>
             {products.length > 0 ? (
               products.map((product) => (
-                <TableRow 
-                  key={product.id} 
+                <TableRow
+                  key={product.id}
                   clickable
                   onClick={() => navigate(`/products/${product.id}`)}
                 >
                   <TableCell>
-                    <span className="font-medium">#{product.id}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{TEMPLATE_ICONS[product.template_type] || '📝'}</span>
+                      <div className="min-w-0">
+                        <p className="font-medium text-neutral-900 text-sm truncate max-w-xs">
+                          {getTemplateName(product)}
+                        </p>
+                        <p className="text-xs text-neutral-400">ID #{product.id}</p>
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell>{getTemplateLabel(product.template_type)}</TableCell>
                   <TableCell>
                     <StatusBadge status={getStatusVariant(product.status)}>
                       {product.status}
                     </StatusBadge>
                   </TableCell>
-                  <TableCell>Grade {product.grade_level}</TableCell>
                   <TableCell>
-                    <span className="font-mono text-sm">{product.ela_standard_code}</span>
+                    <span className="text-sm text-neutral-700">Grade {product.grade_level}</span>
                   </TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      product.worldview_flag === 'CHRISTIAN' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-gray-100 text-gray-800'
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      product.worldview_flag === 'CHRISTIAN'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-neutral-100 text-neutral-600'
                     }`}>
                       {product.worldview_flag === 'CHRISTIAN' ? '✝️ Christian' : '📚 Neutral'}
                     </span>
                   </TableCell>
-                  <TableCell>{new Date(product.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <span className="text-sm text-neutral-500">{new Date(product.created_at).toLocaleDateString()}</span>
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/products/${product.id}`);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/products/${product.id}`); }}
                       >
                         View
                       </Button>

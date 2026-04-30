@@ -9,6 +9,16 @@ import { StatusBadge } from '../components/ui/StatusBadge';
 import { useGenerationJobsQuery } from '../hooks/useGeneration';
 import { GenerationJob } from '../types/api';
 
+const TEMPLATE_LABELS: Record<string, string> = {
+  BUNDLE_OVERVIEW:                 'Bundle Overview',
+  VOCABULARY_PACK:                 'Vocabulary Pack',
+  ANCHOR_READING_PASSAGE:          'Anchor Reading Passage',
+  READING_COMPREHENSION_QUESTIONS: 'Reading Comprehension',
+  SHORT_QUIZ:                      'Short Quiz',
+  EXIT_TICKETS:                    'Exit Tickets',
+  WRITING_PROMPTS:                 'Writing Prompts',
+};
+
 const statusMeta: Record<GenerationJob['status'], { variant: 'success' | 'pending' | 'error'; icon: string; label: string }> = {
   COMPLETED: { variant: 'success', icon: '✅', label: 'Completed' },
   PENDING:   { variant: 'pending', icon: '⏳', label: 'Pending'   },
@@ -124,13 +134,16 @@ export const Jobs: React.FC = () => {
                     <span className="text-2xl mt-0.5">{meta.icon}</span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-semibold text-neutral-800">Job #{job.id}</span>
+                        <span className="font-semibold text-neutral-800">
+                          {job.ela_standard_code
+                            ? `${job.ela_standard_code} — Grade ${job.grade_level}`
+                            : `Job #${job.id}`}
+                        </span>
                         <StatusBadge status={meta.variant}>{meta.label}</StatusBadge>
                         <span className="text-xs text-neutral-400">{timeAgo(job.created_at)}</span>
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-500">
-                        <span>Standard: <span className="font-mono text-neutral-700">{job.ela_standard_code}</span></span>
-                        <span>Grade <span className="text-neutral-700">{job.grade_level}</span></span>
+                        <span>Job <span className="font-mono text-neutral-600">#{job.id}</span></span>
                         <span className={job.worldview_flag === 'CHRISTIAN' ? 'text-blue-600' : ''}>
                           {job.worldview_flag === 'CHRISTIAN' ? '✝️ Christian' : '📚 Neutral'}
                         </span>

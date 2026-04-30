@@ -11,10 +11,40 @@ interface TemplatePreviewCardProps {
   onPreviewLoad?: (preview: TemplatePreview) => void;
 }
 
+const TEMPLATE_LABELS: Record<TemplateType, string> = {
+  BUNDLE_OVERVIEW: 'Bundle Overview',
+  VOCABULARY_PACK: 'Vocabulary Pack',
+  ANCHOR_READING_PASSAGE: 'Anchor Reading Passage',
+  READING_COMPREHENSION_QUESTIONS: 'Reading Comprehension',
+  SHORT_QUIZ: 'Short Quiz',
+  EXIT_TICKETS: 'Exit Tickets',
+  WRITING_PROMPTS: 'Writing Prompts',
+};
+
+const TEMPLATE_DESCRIPTIONS: Record<TemplateType, string> = {
+  BUNDLE_OVERVIEW: 'A complete curriculum package overview with standard alignment, learning objectives, and pacing guide.',
+  VOCABULARY_PACK: 'Key vocabulary terms with definitions, example sentences, and a quiz section.',
+  ANCHOR_READING_PASSAGE: 'A core reading text with pre-reading vocabulary, full passage, and discussion questions.',
+  READING_COMPREHENSION_QUESTIONS: '10 questions: 5 multiple choice, 3 short answer, and 2 extended response.',
+  SHORT_QUIZ: '7 questions: 5 multiple choice and 2 short response with answer key.',
+  EXIT_TICKETS: '5 exit ticket prompts with sample answers for quick end-of-lesson checks.',
+  WRITING_PROMPTS: '3 structured writing prompts with a model exemplar response.',
+};
+
+const TEMPLATE_ICONS: Record<TemplateType, string> = {
+  BUNDLE_OVERVIEW: '📦',
+  VOCABULARY_PACK: '📖',
+  ANCHOR_READING_PASSAGE: '📄',
+  READING_COMPREHENSION_QUESTIONS: '❓',
+  SHORT_QUIZ: '✏️',
+  EXIT_TICKETS: '🎫',
+  WRITING_PROMPTS: '✍️',
+};
+
 export const TemplatePreviewCard: React.FC<TemplatePreviewCardProps> = ({
   templateType,
   worldviewFlag,
-  onPreviewLoad
+  onPreviewLoad,
 }) => {
   const [preview, setPreview] = useState<TemplatePreview | null>(null);
   const [loading, setLoading] = useState(false);
@@ -23,7 +53,6 @@ export const TemplatePreviewCard: React.FC<TemplatePreviewCardProps> = ({
   const loadPreview = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
     try {
       const previewData = await templatesApi.getTemplatePreview(templateType);
       setPreview(previewData);
@@ -39,130 +68,116 @@ export const TemplatePreviewCard: React.FC<TemplatePreviewCardProps> = ({
     loadPreview();
   }, [loadPreview]);
 
-  const getTemplateLabel = (type: TemplateType) => {
-    const labels: Record<TemplateType, string> = {
-      'BUNDLE_OVERVIEW': 'Bundle Overview',
-      'VOCABULARY_PACK': 'Vocabulary Pack',
-      'ANCHOR_READING_PASSAGE': 'Anchor Reading Passage',
-      'READING_COMPREHENSION_QUESTIONS': 'Reading Comprehension',
-      'SHORT_QUIZ': 'Short Quiz',
-      'EXIT_TICKETS': 'Exit Tickets',
-      'WRITING_PROMPTS': 'Writing Prompts',
-    };
-    return labels[type] || type;
-  };
-
-  if (loading) {
-    return (
-      <Card>
-        <div className="flex items-center justify-center py-8">
-          <Spinner size="md" />
-          <span className="ml-2 text-neutral-600">Loading template preview...</span>
-        </div>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <div className="text-center py-8">
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button variant="outline" onClick={loadPreview}>
-            Retry
-          </Button>
-        </div>
-      </Card>
-    );
-  }
-
-  if (!preview) return null;
-
   return (
-    <Card>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-900">
-            {getTemplateLabel(templateType)} Preview
-          </h3>
-          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-            worldviewFlag === 'CHRISTIAN' 
-              ? 'bg-blue-100 text-blue-800' 
-              : 'bg-gray-100 text-gray-800'
-          }`}>
-            {worldviewFlag === 'CHRISTIAN' ? '✝️ Christian' : '📚 Neutral'}
-          </span>
-        </div>
-
-        {/* Template Structure */}
-        <div className="bg-neutral-50 p-4 rounded-lg">
-          <h4 className="font-medium text-neutral-900 mb-2">Template Structure:</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-            {preview.structure.fields.map((field) => (
-              <div key={field.name} className="flex items-center space-x-2">
-                <span className="font-mono text-primary-600">{field.name}</span>
-                <span className="text-neutral-500">({field.type})</span>
-                {field.required && <span className="text-red-500">*</span>}
-              </div>
-            ))}
+    <div className="space-y-4">
+      {/* Template Info Card */}
+      <Card className="!p-5">
+        <div className="flex items-start gap-3 mb-4">
+          <span className="text-3xl">{TEMPLATE_ICONS[templateType]}</span>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-neutral-900 text-base leading-tight">
+              {TEMPLATE_LABELS[templateType]}
+            </h3>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${
+              worldviewFlag === 'CHRISTIAN'
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-neutral-100 text-neutral-600'
+            }`}>
+              {worldviewFlag === 'CHRISTIAN' ? '✝️ Christian' : '📚 Neutral'}
+            </span>
           </div>
         </div>
+        <p className="text-sm text-neutral-600 leading-relaxed">
+          {TEMPLATE_DESCRIPTIONS[templateType]}
+        </p>
+      </Card>
 
-        {/* Preview Content */}
-        <div className="space-y-3">
-          <h4 className="font-medium text-neutral-900">Example Output:</h4>
-          
-          {templateType === 'ANCHOR_READING_PASSAGE' && (
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-neutral-700">Title:</span>
-                <p className="text-neutral-900">{preview.preview.title}</p>
-              </div>
-              
-              <div>
-                <span className="text-sm font-medium text-neutral-700">Passage Preview:</span>
-                <p className="text-neutral-600 text-sm italic">
-                  {preview.preview.passage_text?.substring(0, 100)}...
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-neutral-700">Reading Level:</span>
-                  <p>{preview.preview.reading_level}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-neutral-700">Word Count:</span>
-                  <p>{preview.preview.word_count}</p>
-                </div>
-              </div>
-              
-              <div>
-                <span className="text-sm font-medium text-neutral-700">Key Vocabulary:</span>
-                <ul className="text-sm text-neutral-600 mt-1">
-                  {preview.preview.key_vocabulary?.slice(0, 2).map((vocab: string, idx: number) => (
-                    <li key={idx}>• {vocab}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-        </div>
+      {/* Preview Content Card */}
+      <Card className="!p-5">
+        <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
+          Example Output
+        </h4>
 
-        {/* Christian Guidelines */}
-        {worldviewFlag === 'CHRISTIAN' && preview.structure.christian_guidelines && (
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Christian Content Guidelines:</h4>
-            <div className="space-y-1 text-sm text-blue-800">
-              {Object.entries(preview.structure.christian_guidelines).map(([key, value]) => (
-                <div key={key}>
-                  <span className="font-medium capitalize">{key.replace('_', ' ')}:</span> {value}
-                </div>
-              ))}
-            </div>
+        {loading && (
+          <div className="flex items-center gap-2 py-4 text-neutral-500 text-sm">
+            <Spinner size="sm" />
+            <span>Loading preview...</span>
           </div>
         )}
-      </div>
-    </Card>
+
+        {error && (
+          <div className="text-center py-4">
+            <p className="text-sm text-red-500 mb-2">{error}</p>
+            <Button variant="outline" size="sm" onClick={loadPreview}>Retry</Button>
+          </div>
+        )}
+
+        {!loading && !error && preview && (
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {Object.entries(preview.preview).map(([key, value]) => {
+              if (!value || (Array.isArray(value) && value.length === 0)) return null;
+              const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+              if (Array.isArray(value)) {
+                return (
+                  <div key={key}>
+                    <p className="text-xs font-medium text-neutral-500 mb-1">{label}</p>
+                    <ul className="space-y-1">
+                      {(value as any[]).slice(0, 3).map((item, idx) => (
+                        <li key={idx} className="text-xs text-neutral-700 bg-neutral-50 rounded px-2 py-1 truncate">
+                          {typeof item === 'string' ? `• ${item}` : typeof item === 'object' ? `• ${item.title || item.word || item.question || JSON.stringify(item).slice(0, 60)}` : `• ${item}`}
+                        </li>
+                      ))}
+                      {value.length > 3 && (
+                        <li className="text-xs text-neutral-400 px-2">+{value.length - 3} more...</li>
+                      )}
+                    </ul>
+                  </div>
+                );
+              }
+
+              if (typeof value === 'string') {
+                return (
+                  <div key={key}>
+                    <p className="text-xs font-medium text-neutral-500 mb-1">{label}</p>
+                    <p className="text-xs text-neutral-700 bg-neutral-50 rounded px-2 py-1.5 leading-relaxed line-clamp-3">
+                      {value}
+                    </p>
+                  </div>
+                );
+              }
+
+              if (typeof value === 'number') {
+                return (
+                  <div key={key} className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-neutral-500">{label}</p>
+                    <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">{value}</span>
+                  </div>
+                );
+              }
+
+              return null;
+            })}
+          </div>
+        )}
+      </Card>
+
+      {/* Christian Guidelines */}
+      {worldviewFlag === 'CHRISTIAN' && preview?.structure?.christian_guidelines &&
+        Object.keys(preview.structure.christian_guidelines).length > 0 && (
+        <Card className="!p-4 border border-blue-100 !bg-blue-50">
+          <h4 className="text-xs font-semibold text-blue-800 mb-2 uppercase tracking-wide">
+            ✝️ Christian Content Guidelines
+          </h4>
+          <div className="space-y-1">
+            {Object.entries(preview.structure.christian_guidelines).map(([key, value]) => (
+              <p key={key} className="text-xs text-blue-700">
+                <span className="font-medium capitalize">{key.replace(/_/g, ' ')}:</span> {value}
+              </p>
+            ))}
+          </div>
+        </Card>
+      )}
+    </div>
   );
 };

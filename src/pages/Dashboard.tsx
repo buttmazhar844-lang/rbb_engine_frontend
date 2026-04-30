@@ -75,8 +75,8 @@ export const Dashboard: React.FC = () => {
                 <div className="space-y-2">
                   {Object.entries(stats.content_by_grade).map(([grade, count]) => (
                     <div key={grade} className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
-                      <span className="text-sm text-neutral-700">Grade {grade}</span>
-                      <span className="text-sm font-bold text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-full">{count}</span>
+                      <span className="text-sm text-neutral-700">{grade.replace('Grade ', 'Grade ')}</span>
+                      <span className="text-sm font-bold text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-full">{count as number}</span>
                     </div>
                   ))}
                 </div>
