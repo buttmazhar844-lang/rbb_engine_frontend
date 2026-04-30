@@ -80,8 +80,6 @@ export const QuickGenerate: React.FC = () => {
     setErrorMsg(null);
   };
 
-  const selectedTemplate = TEMPLATE_OPTIONS.find(t => t.value === formData.template_type);
-
   return (
     <PageContainer>
       <PageHeader

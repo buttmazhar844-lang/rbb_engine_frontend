@@ -9,16 +9,6 @@ import { StatusBadge } from '../components/ui/StatusBadge';
 import { useGenerationJobsQuery } from '../hooks/useGeneration';
 import { GenerationJob } from '../types/api';
 
-const TEMPLATE_LABELS: Record<string, string> = {
-  BUNDLE_OVERVIEW:                 'Bundle Overview',
-  VOCABULARY_PACK:                 'Vocabulary Pack',
-  ANCHOR_READING_PASSAGE:          'Anchor Reading Passage',
-  READING_COMPREHENSION_QUESTIONS: 'Reading Comprehension',
-  SHORT_QUIZ:                      'Short Quiz',
-  EXIT_TICKETS:                    'Exit Tickets',
-  WRITING_PROMPTS:                 'Writing Prompts',
-};
-
 const statusMeta: Record<GenerationJob['status'], { variant: 'success' | 'pending' | 'error'; icon: string; label: string }> = {
   COMPLETED: { variant: 'success', icon: '✅', label: 'Completed' },
   PENDING:   { variant: 'pending', icon: '⏳', label: 'Pending'   },
