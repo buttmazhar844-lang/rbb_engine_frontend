@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -8,7 +8,7 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { TemplatePreviewCard } from '../components/ui/TemplatePreviewCard';
 import { generationApi } from '../api/generation';
 import { useStandards } from '../hooks/useStandards';
-import { TemplateType, ELAStandardType, GradeLevel, WorldviewFlag, GenerateTemplateRequest } from '../types/api';
+import { TemplateType, ELAStandardType, GradeLevel, WorldviewFlag, GenerateTemplateRequest, BundleContext } from '../types/api';
 
 interface FormData {
   grade_level: GradeLevel;
@@ -44,8 +44,21 @@ export const QuickGenerate: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [bundleContext, setBundleContext] = useState<BundleContext | null>(null);
+  const [useBundleContext, setUseBundleContext] = useState(true);
 
   const { data: standards } = useStandards({ grade_level: formData.grade_level });
+
+  // Fetch bundle context whenever standard changes
+  useEffect(() => {
+    if (!formData.standard_id) {
+      setBundleContext(null);
+      return;
+    }
+    generationApi.getBundleContext(formData.standard_id)
+      .then(ctx => setBundleContext(ctx))
+      .catch(() => setBundleContext(null));
+  }, [formData.standard_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +76,7 @@ export const QuickGenerate: React.FC = () => {
         ela_standard_type: formData.ela_standard_type,
         ela_standard_code: formData.ela_standard_code,
         worldview_flag: formData.worldview_flag,
+        use_bundle_context: useBundleContext && formData.template_type !== 'ANCHOR_READING_PASSAGE',
       };
       const result = await generationApi.generateTemplate(request);
       const templateLabel = TEMPLATE_OPTIONS.find(t => t.value === formData.template_type)?.label;
@@ -255,6 +269,111 @@ export const QuickGenerate: React.FC = () => {
                   </label>
                 </div>
               </div>
+
+              {/* Bundle Context Banner */}
+              {formData.standard_id && formData.template_type !== 'ANCHOR_READING_PASSAGE' && (
+                <div>
+                  <h3 className="text-sm font-semibold text-neutral-800 uppercase tracking-wide mb-3 pb-2 border-b border-neutral-100">
+                    Bundle Cohesion
+                  </h3>
+
+                  {bundleContext ? (
+                    <div className="space-y-3">
+                      {/* Context info box */}
+                      <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-base">📦</span>
+                          <p className="text-sm font-semibold text-neutral-800">Active Bundle Context</p>
+                          <span className="ml-auto text-xs text-neutral-400">
+                            {new Date(bundleContext.updated_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-neutral-700">
+                          <span className="font-medium">Passage:</span> "{bundleContext.passage_title}"
+                        </p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          <span className="font-medium">Topic:</span> {bundleContext.passage_topic}
+                        </p>
+                        {bundleContext.key_vocabulary && (
+                          <p className="text-xs text-neutral-500 mt-1">
+                            <span className="font-medium">Vocabulary:</span> {bundleContext.key_vocabulary}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Use / Don't use choice */}
+                      <p className="text-xs text-neutral-500">How should this template be generated?</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                          useBundleContext
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-neutral-200 hover:border-neutral-300'
+                        }`}>
+                          <input
+                            type="radio"
+                            name="bundle_context"
+                            checked={useBundleContext}
+                            onChange={() => setUseBundleContext(true)}
+                            className="mt-0.5 w-4 h-4 text-primary-600 shrink-0"
+                          />
+                          <div>
+                            <p className={`text-sm font-medium ${
+                              useBundleContext ? 'text-primary-700' : 'text-neutral-800'
+                            }`}>
+                              Use bundle context
+                            </p>
+                            <p className="text-xs text-neutral-500 mt-0.5">
+                              Cohesive with "{bundleContext.passage_title}" — ready to sell as a bundle
+                            </p>
+                          </div>
+                        </label>
+
+                        <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                          !useBundleContext
+                            ? 'border-neutral-500 bg-neutral-50'
+                            : 'border-neutral-200 hover:border-neutral-300'
+                        }`}>
+                          <input
+                            type="radio"
+                            name="bundle_context"
+                            checked={!useBundleContext}
+                            onChange={() => setUseBundleContext(false)}
+                            className="mt-0.5 w-4 h-4 text-neutral-600 shrink-0"
+                          />
+                          <div>
+                            <p className={`text-sm font-medium ${
+                              !useBundleContext ? 'text-neutral-800' : 'text-neutral-600'
+                            }`}>
+                              Generate independently
+                            </p>
+                            <p className="text-xs text-neutral-500 mt-0.5">
+                              Fresh topic, not linked to the existing passage
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-neutral-50 border border-dashed border-neutral-300 rounded-lg p-4 text-center">
+                      <p className="text-sm text-neutral-500">
+                        No bundle context yet for <span className="font-mono font-medium">{formData.ela_standard_code}</span>.
+                      </p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Generate an <span className="font-medium">Anchor Reading Passage</span> first to enable bundle cohesion for this standard.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {formData.template_type === 'ANCHOR_READING_PASSAGE' && bundleContext && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                  <p className="text-xs font-medium text-amber-800">
+                    ⚠️ Generating a new passage will replace the current bundle context for <span className="font-mono">{formData.ela_standard_code}</span>.
+                    All future templates for this standard will use the new passage.
+                  </p>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-3 pt-2 border-t border-neutral-100">

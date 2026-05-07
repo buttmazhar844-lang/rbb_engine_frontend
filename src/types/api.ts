@@ -86,6 +86,15 @@ export interface GenerateTemplateRequest {
   ela_standard_type: ELAStandardType;
   ela_standard_code: string;
   worldview_flag: WorldviewFlag;
+  use_bundle_context?: boolean;
+}
+
+export interface BundleContext {
+  standard_id: number;
+  passage_title: string;
+  passage_topic: string;
+  key_vocabulary: string | null;
+  updated_at: string;
 }
 
 export interface GenerateTemplateResponse {
