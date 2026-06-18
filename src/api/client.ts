@@ -2,7 +2,6 @@ import axios from 'axios';
 
 // API base URL from environment variables
 const BASE_URL = 'https://rbbenginebackend-production.up.railway.app/api';
-// const BASE_URL = 'http://localhost:8000/api';
 
 // Create Axios instance with default configuration
 export const apiClient = axios.create({
